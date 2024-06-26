@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 
 import requests
 
+import httpx
+
 from config.settings import settings
 
 
@@ -14,9 +16,13 @@ async def close_application(agreement_id: int):
    '''
    Close application
    '''
-   try:
-      answer = requests.post(f"http://{settings.ORIGINATION_HOST}:{settings.ORIGINATION_PORT}/application/{agreement_id}/close")
-      answer_content = answer.json()
-      return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
-   except:
-      return JSONResponse(content={"message": "Servise not available"}, status_code=503)
+   link = f"http://{settings.ORIGINATION_HOST}:{settings.ORIGINATION_PORT}/application/{agreement_id}/close"
+   
+   async with httpx.AsyncClient(follow_redirects=True) as client:
+      try:
+         answer = await client.post(link)
+         answer.raise_for_status()
+         answer_content = answer.json()
+         return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
+      except httpx.RequestError:
+         return JSONResponse(content={"message": "Service not available"}, status_code=503)
