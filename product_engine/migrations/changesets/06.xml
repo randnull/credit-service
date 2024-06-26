@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="create-index">
+        <createIndex indexName="index_title" tableName="product">
+            <column name="title"/>
+        </createIndex>
+        
+        <createIndex indexName="index_min_term" tableName="product">
+            <column name="min_term"/>
+        </createIndex>
+
+        <createIndex indexName="index_create_datetime" tableName="agreement">
+            <column name="create_datetime"/>
+        </createIndex>
+
+        <createIndex indexName="index_status_agreement" tableName="agreement">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex indexName="index_client_id" tableName="agreement">
+            <column name="client_id"/>
+        </createIndex>
+
+        <createIndex indexName="index_payment_status" tableName="schedule_payment">
+            <column name="payment_status"/>
+        </createIndex>
+
+        <createIndex indexName="index_agreement_id" tableName="schedule_payment">
+            <column name="agreement_id"/>
+        </createIndex>
+    </changeSet>
+    
+</databaseChangeLog>

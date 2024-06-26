@@ -1,0 +1,17 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="add-foreign-key">
+        <addForeignKeyConstraint baseColumnNames="client_id" baseTableName="agreement" constraintName="fk_client_id" referencedColumnNames="id_client" referencedTableName="client"/>
+        <addForeignKeyConstraint baseColumnNames="agreement_id" baseTableName="schedule_payment" constraintName="fk_agreement_id" referencedColumnNames="id_agreement" referencedTableName="agreement"/>
+        <addForeignKeyConstraint baseColumnNames="product_code" baseTableName="agreement" constraintName="fk_product_id" referencedColumnNames="code" referencedTableName="product"/>
+    </changeSet>
+    
+</databaseChangeLog>

@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="create-shedule-table">
+        <createTable tableName="schedule_payment">
+            <column autoIncrement="true" name="id_schedule" type="INTEGER" remarks="table with schedule payment">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="schedule_pkey"/>
+            </column>
+
+            <column name="agreement_id" type="INTEGER" remarks="agreement id foreign key from table client">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_date" type="TIMESTAMPTZ" remarks="schedule payment date">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="principal_payment" type="DOUBLE PRECISION" remarks="principal payment">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="interest_payment" type="DOUBLE PRECISION" remarks="interest payment">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_sum" type="DOUBLE PRECISION" remarks="principal payment">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_number" type="INTEGER" remarks="number of payment">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_status" type="VARCHAR" remarks="current status (PAID/OVERDUE/NOT YET PAID)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+</databaseChangeLog>

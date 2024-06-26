@@ -1,0 +1,234 @@
+version: "3"
+
+services:
+  postgresql:
+    container_name: "fintech-postgresql"
+    image: postgres:15.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: product_engine, origination
+    ports:
+      - "5432:5432"
+    networks:
+      - fintech-network
+    volumes:
+      - ./tools/database-dev/configs/create-multiple-db-with-users.sh:/docker-entrypoint-initdb.d/create-multiple-db-with-users.sh:ro
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  pgadmin:
+    container_name: "fintech-pgadmin"
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    entrypoint: >
+      /bin/sh -c "
+      cp -f /pgadmin4/pgpass /var/lib/pgadmin/;
+      chmod 600 /var/lib/pgadmin/pgpass;
+      /entrypoint.sh
+      "
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "8080:80"
+    networks:
+      - fintech-network
+    volumes:
+      - ./tools/database-dev/configs/servers.json:/pgadmin4/servers.json:ro
+      - ./tools/database-dev/configs/pgpass:/pgadmin4/pgpass:ro
+  migration_product_engine:
+    image: liquibase/liquibase:4.19.0
+    volumes:
+      - ./product_engine/migrations:/app
+    command: --defaultsFile=/app/dev.properties update
+    networks:
+      - fintech-network
+    depends_on:
+      - postgresql
+  migration_origination:
+    image: liquibase/liquibase:4.19.0
+    volumes:
+      - ./origination/migrations:/app
+    command: --defaultsFile=/app/dev.properties update
+    networks:
+      - fintech-network
+    depends_on:
+      - postgresql
+  product_engine-fastapi:
+    container_name: "fintech-product_engine"
+    build: 
+      context: ./
+      dockerfile: ./product_engine/src/Dockerfile
+    ports:
+      - "5055:5050"
+    depends_on:
+      migration_product_engine:
+        condition: service_completed_successfully
+      init-kafka:
+        condition: service_completed_successfully
+      postgresql:
+        condition: service_healthy
+    networks:
+      - fintech-network
+    environment:
+      ORIGINATION_HOST: "origination-fastapi"
+      ORIGINATION_PORT: 6050
+      SECONDS_DELAY_SCHEDULE: 60
+      SECONDS_DELAY_SCHEDULE_OVERDUE: 60 #86400
+      DB_LOGIN: "product_engine"
+      DB_PASSWORD: "product_engine"
+      DB_HOST: "postgresql"
+      DB_NAME: "product_engine"
+      KAFKA_HOST: "kafka"
+      KAFKA_PORT: "29092"
+      KAFKA_ORIGINATION_PRODUCER_TOPIC: "new-agreements"
+      KAFKA_SCORING_CONSUMER_TOPIC: "scoring-response"
+      KAFKA_SCORING_GROUP_ID: "pe-scoring-group"
+      KAFKA_PAYMENT_CONSUMER_TOPIC: "payment-recieved"
+      KAFKA_PAYMENT_GROUP_ID: "pe-payment-group"
+      KAFKA_OVERDUE_TOPIC: "payment-overdue"
+    command: uvicorn main:app --host 0.0.0.0 --port 5050 --reload
+  origination-fastapi:
+    container_name: "fintech-origination"
+    build: 
+      context: ./
+      dockerfile: ./origination/src/Dockerfile
+    ports:
+      - "6055:6050"
+    depends_on:
+      migration_origination:
+        condition: service_completed_successfully
+      init-kafka:
+        condition: service_completed_successfully
+      postgresql:
+        condition: service_healthy
+    networks:
+      - fintech-network
+    environment:
+      PRODUCT_ENGINE_HOST: "product_engine-fastapi"
+      PRODUCT_ENGINE_PORT: 5050
+      SCORING_HOST: "scoring-fastapi"
+      SCORING_PORT: 4005
+      SECONDS_DELAY_SCHEDULE: 30
+      SECONDS_DELAY_SCHEDULE_APPROVED: 60
+      DB_LOGIN: "origination"
+      DB_PASSWORD: "origination"
+      DB_HOST: "postgresql"
+      DB_NAME: "origination"
+      KAFKA_HOST: "kafka"
+      KAFKA_PORT: "29092"
+      KAFKA_ORIGINATION_CONSUMER_TOPIC: "new-agreements"
+      KAFKA_SCORING_PRODUCER_TOPIC: "scoring-request"
+      KAFKA_SCORING_CONSUMER_TOPIC: "scoring-response"
+      KAFKA_SCORING_GROUP_ID: "origination-scoring-group"
+      KAFKA_ORIGINATION_GROUP_ID: "agreement-group"
+      KAFKA_PAYMENT_OPERATIONS_TOPIC: "payment-operations"
+    command: uvicorn main:app --host 0.0.0.0 --port 6050 --reload
+  gateway-fastapi:
+    container_name: "fintech-gateway"
+    build: 
+      context: ./
+      dockerfile: ./gateway/src/Dockerfile
+    ports:
+      - "5005:5000"
+    depends_on:
+      - product_engine-fastapi
+      - origination-fastapi
+    networks:
+      - fintech-network
+    environment:
+      ORIGINATION_HOST: "origination-fastapi"
+      ORIGINATION_PORT: 6050
+      PRODUCT_ENGINE_HOST: "product_engine-fastapi"
+      PRODUCT_ENGINE_PORT: 5050
+    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+  scoring-fastapi:
+    container_name: "fintech-scoring"
+    build: 
+      context: ./
+      dockerfile: ./scoring/src/Dockerfile
+    ports:
+      - "4050:4005"
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+    networks:
+      - fintech-network
+    environment:
+      PRODUCT_ENGINE_HOST: "product_engine-fastapi"
+      PRODUCT_ENGINE_PORT: 5050
+      KAFKA_HOST: "kafka"
+      KAFKA_PORT: "29092"
+      KAFKA_PRODUCER_TOPIC: "scoring-response"
+      KAFKA_CONSUMER_TOPIC: "scoring-request"
+      KAFKA_GROUP_ID: "scoring-request-group"
+    command: uvicorn main:app --host 0.0.0.0 --port 4005 --reload
+  kafka:
+    container_name: "fintech-kafka"
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: fintech-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://fintech-kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@fintech-kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://fintech-kafka:29092,CONTROLLER://fintech-kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_JMX_PORT: 9997
+    ports:
+      - "9092:9092"
+    networks:
+      - fintech-network
+  kafka-ui:
+    container_name: "fintech-kafka-ui"
+    image: provectuslabs/kafka-ui
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'local'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'fintech-kafka:29092'
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    ports:
+      - "8081:8080"
+    networks:
+      - fintech-network
+  init-kafka:
+    container_name: "fintech-init-kafka"
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - kafka
+    networks:
+      - fintech-network
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server fintech-kafka:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic new-agreements --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic scoring-request --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic scoring-response --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic payment-recieved --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic payment-overdue --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server fintech-kafka:29092 --create --if-not-exists --topic payment-operations --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server fintech-kafka:29092 --list
+      "
+
+networks:
+  fintech-network:
+    name: "fintech-network"

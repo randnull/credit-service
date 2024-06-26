@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet author="k.goryunov" id="create-application-table">
+        <createTable tableName="application">
+            <column autoIncrement="true" name="id_application" type="INTEGER" remarks="table with application">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="application_pkey"/>
+            </column>
+
+            <column name="client_id" type="INTEGER" remarks="client id foreign key from table client">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="principal" type="INTEGER" remarks="current principal">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="agreement_id" type="INTEGER" remarks="agreement id">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="product_code" type="VARCHAR" remarks="product code">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_datetime" type="TIMESTAMPTZ" remarks="application activation datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR" remarks="current status (NEW/ACTIVE/CLOSED)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

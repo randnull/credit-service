@@ -1,0 +1,59 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="create-product-table">
+        <createTable tableName="product" remarks="table with credits type">
+            <column autoIncrement="true" name="id_product" type="INTEGER" remarks="product id pk">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="product_pkey"/>
+            </column>
+
+            <column name="code" type="VARCHAR" remarks="unique code of credit type">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="title" type="VARCHAR" remarks="title of credit">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="min_term" type="INTEGER" remarks="minimal term (month)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="max_term" type="INTEGER" remarks="maximal term (month)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="min_principal" type="INTEGER" remarks="minimal principal">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="max_principal" type="INTEGER" remarks="maximal principal">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="min_interest" type="DOUBLE PRECISION" remarks="minimal interest">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="max_interest" type="DOUBLE PRECISION" remarks="maximal interest">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="min_origination" type="INTEGER" remarks="minimal origination">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="max_origination" type="INTEGER" remarks="maximal origination">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+</databaseChangeLog>

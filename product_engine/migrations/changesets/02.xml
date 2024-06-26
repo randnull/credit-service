@@ -1,0 +1,51 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="create-agreement-table">
+        <createTable tableName="agreement">
+            <column autoIncrement="true" name="id_agreement" type="INTEGER" remarks="table with agreements">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="agreement_pkey"/>
+            </column>
+
+            <column name="product_code" type="VARCHAR" remarks="fk product_code">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="client_id" type="INTEGER" remarks="client id foreign key from table client">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="principal" type="INTEGER" remarks="current principal">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="term" type="INTEGER" remarks="current term">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="origination" type="INTEGER" remarks="current origination">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="interest" type="DOUBLE PRECISION" remarks="current interest">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_datetime" type="TIMESTAMPTZ" remarks="agreement activation datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR" remarks="current status (NEW/ACTIVE/CLOSED)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+</databaseChangeLog>

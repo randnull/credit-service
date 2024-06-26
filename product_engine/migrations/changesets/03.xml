@@ -1,0 +1,51 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+    <changeSet author="k.goryunov" id="create-client-table">
+        <createTable tableName="client">
+            <column autoIncrement="true" name="id_client" type="INTEGER" remarks="table with client information">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="client_pkey"/>
+            </column>
+
+            <column name="first_name" type="VARCHAR" remarks="client's name">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="second_name" type="VARCHAR" remarks="client's surname">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="third_name" type="VARCHAR" remarks="client's thirdname">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="birthday" type="VARCHAR" remarks="client's birthday">
+                <constraints nullable="false"/>
+            </column>
+            
+            <column name="phone_number" type="VARCHAR" remarks="client's phone number">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="client_email" type="VARCHAR" remarks="client's email">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="passport_data" type="VARCHAR" remarks="client's passport data">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="salary" type="INTEGER" remarks="client's month income">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+</databaseChangeLog>
