@@ -21,7 +21,6 @@ async def close_application(agreement_id: int):
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.post(link)
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:

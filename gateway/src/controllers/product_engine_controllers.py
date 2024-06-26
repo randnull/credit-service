@@ -23,7 +23,6 @@ async def get_products():
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.get(link)
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:
@@ -40,7 +39,6 @@ async def get_product_by_code(product_code: str):
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.get(link)
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:
@@ -57,7 +55,6 @@ async def add_agreement(request: RequestModel):
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.post(link, json=request.dict())
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:
@@ -74,7 +71,6 @@ async def get_schedule(agreement_id: int):
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.get(link)
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:
@@ -91,7 +87,6 @@ async def get_agreements(client_id: int):
    async with httpx.AsyncClient(follow_redirects=True) as client:
       try:
          answer = await client.get(link)
-         answer.raise_for_status()
          answer_content = answer.json()
          return JSONResponse(content={"message": answer_content}, status_code=answer.status_code)
       except httpx.RequestError:
